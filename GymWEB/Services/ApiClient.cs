@@ -43,12 +43,12 @@ namespace GymWEB.Services
             AgregarToken();
 
             HttpResponseMessage response =
-                await _httpClient.GetAsync(endpoint);
+                await _httpClient.GetAsync(endpoint).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
 
             string json =
-                await response.Content.ReadAsStringAsync();
+                await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             return JsonConvert.DeserializeObject<T>(json);
         }
@@ -67,17 +67,18 @@ namespace GymWEB.Services
             StringContent content =
                 new StringContent(json, Encoding.UTF8, "application/json");
 
-            System.Diagnostics.Debug.WriteLine("Enviando petición...");
-
             HttpResponseMessage response =
-                await _httpClient.PostAsync(endpoint, content);
-
-            System.Diagnostics.Debug.WriteLine("Respuesta recibida.");
+                await _httpClient.PostAsync(endpoint, content).ConfigureAwait(false);
 
             string resultado =
-                await response.Content.ReadAsStringAsync();
+                await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            throw new Exception(resultado);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(resultado);
+            }
+
+            return JsonConvert.DeserializeObject<TResponse>(resultado);
         }
 
         //==========================
@@ -96,7 +97,7 @@ namespace GymWEB.Services
                 new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response =
-                await _httpClient.PostAsync(endpoint, content);
+                await _httpClient.PostAsync(endpoint, content).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
@@ -117,7 +118,7 @@ namespace GymWEB.Services
                 new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage response =
-                await _httpClient.PutAsync(endpoint, content);
+                await _httpClient.PutAsync(endpoint, content).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
@@ -130,7 +131,7 @@ namespace GymWEB.Services
             AgregarToken();
 
             HttpResponseMessage response =
-                await _httpClient.DeleteAsync(endpoint);
+                await _httpClient.DeleteAsync(endpoint).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
