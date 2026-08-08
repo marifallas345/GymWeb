@@ -1,4 +1,6 @@
-﻿using GymWEB.Models;
+﻿
+using GymWEB.Exceptions;
+using GymWEB.Models;
 using GymWEB.Services;
 using System;
 using System.Web.UI;
@@ -12,45 +14,62 @@ namespace GymWEB.Views
             if (!IsPostBack)
             {
                 Session.Clear();
+
+                string msg = Request.QueryString["msg"];
+
+                if (!string.IsNullOrWhiteSpace(msg))
+                {
+                    // El valor llega URL-decodificado desde Request.QueryString;
+                    // Se codifica como HTML al asignarlo para evitar XSS reflejado.
+                    lblMensaje.Text = Server.HtmlEncode(msg);
+                }
             }
         }
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
+            string usuario = txtUsuario.Text.Trim();
+            string password = txtPassword.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(password))
+            {
+                lblMensaje.Text = "Ingresa usuario y contraseña.";
+                return;
+            }
+
             try
             {
-                lblMensaje.Text = "1";
-
                 LoginRequest login = new LoginRequest
                 {
-                    Username = txtUsuario.Text.Trim(),
-                    Password = txtPassword.Text.Trim()
+                    Username = usuario,
+                    Password = password
                 };
 
-                lblMensaje.Text = "2";
-
                 UsuarioService servicio = new UsuarioService();
-
-                lblMensaje.Text = "3";
-
                 LoginResponse respuesta = servicio.Login(login);
 
-                lblMensaje.Text = "4";
-
+                Session.Clear();
                 Session["Token"] = respuesta.Token;
-
-                lblMensaje.Text = "5";
-
                 Session["Usuario"] = respuesta.Usuario.Nombre;
                 Session["Rol"] = respuesta.Usuario.Rol;
 
-                lblMensaje.Text = "6";
-
                 Response.Redirect("~/Views/Dashboard.aspx");
             }
-            catch (Exception ex)
+            catch (ApiException apiEx) when (apiEx.EsNoAutorizado)
             {
-                lblMensaje.Text = ex.ToString();
+                // Credenciales inválidas: Mensaje genérico, sin indicar si el
+                // usuario existe o no.
+                lblMensaje.Text = "Usuario o contraseña incorrectos.";
+            }
+            catch (ApiException apiEx)
+            {
+               
+                lblMensaje.Text = apiEx.Message;
+            }
+            catch (Exception)
+            {
+           
+                lblMensaje.Text = "Ocurrió un error inesperado. Intenta nuevamente.";
             }
         }
     }
