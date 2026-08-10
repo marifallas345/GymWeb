@@ -89,13 +89,17 @@
     <Compile Include="Helpers\BasePage.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Models\Cliente.cs" />
+    <Compile Include="Models\Inscripcion.cs" />
     <Compile Include="Models\LoginRequest.cs" />
     <Compile Include="Models\LoginResponse.cs" />
+    <Compile Include="Models\Membresia.cs" />
     <Compile Include="Models\Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ApiClient.cs" />
     <Compile Include="Services\ClienteService.cs" />
     <Compile Include="Services\InscripcionesService.cs" />
+    <Compile Include="Services\InscripcionService.cs" />
     <Compile Include="Services\MembresiaService.cs" />
     <Compile Include="Services\UsuarioService.cs" />
     <Compile Include="Views\Clientes.aspx.cs">

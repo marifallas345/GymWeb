@@ -1,142 +1,196 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Dashboard.aspx.cs" Inherits="GymWEB.Views.Dashboard" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" Async="true" CodeBehind="Dashboard.aspx.cs" Inherits="GymWEB.Views.Dashboard" %>
 
-<!DOCTYPE html>
+<meta charset="utf-8" />
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<title>Dashboard - Gym Control Pro</title>
 
-<head runat="server">
-
-    <meta charset="utf-8"/>
-
-    <title>Dashboard</title>
-
-    <link href="../Content/site.css" rel="stylesheet"/>
-
-</head>
-
-<body>
-
-<form id="form1" runat="server">
+<link href="../Content/site.css" rel="stylesheet" />
 
 <div class="layout">
 
-    <!-- MENU -->
+    <!-- SIDEBAR -->
 
-    <aside class="sidebar">
+    <asp:Panel
+        ID="pnlSidebar"
+        runat="server"
+        CssClass="sidebar">
 
-        <h2>GYM</h2>
+        <h2 class="logo">
+            GYM CONTROL PRO
+        </h2>
 
-        <asp:HyperLink runat="server"
-            NavigateUrl="Dashboard.aspx"
-            CssClass="menu-item"
-            Text="🏠 Dashboard" />
+        <asp:Button
+            ID="btnDashboard"
+            runat="server"
+            Text="Dashboard"
+            CssClass="menu-button"
+            OnClick="btnDashboard_Click" />
 
-        <asp:HyperLink runat="server"
-            NavigateUrl="Clientes.aspx"
-            CssClass="menu-item"
-            Text="👥 Clientes" />
+        <asp:Button
+            ID="btnClientes"
+            runat="server"
+            Text="Clientes"
+            CssClass="menu-button"
+            OnClick="btnClientes_Click" />
 
-        <asp:HyperLink runat="server"
-            NavigateUrl="Membresias.aspx"
-            CssClass="menu-item"
-            Text="📋 Membresías" />
+        <asp:Button
+            ID="btnMembresias"
+            runat="server"
+            Text="Membresías"
+            CssClass="menu-button"
+            OnClick="btnMembresias_Click" />
 
-        <asp:HyperLink runat="server"
-            NavigateUrl="Inscripciones.aspx"
-            CssClass="menu-item"
-            Text="📝 Inscripciones" />
+        <asp:Button
+            ID="btnInscripciones"
+            runat="server"
+            Text="Inscripciones"
+            CssClass="menu-button"
+            OnClick="btnInscripciones_Click" />
 
-        <asp:HyperLink runat="server"
-            NavigateUrl="Usuarios.aspx"
-            CssClass="menu-item"
-            Text="👤 Usuarios" />
+        <asp:Button
+            ID="btnUsuarios"
+            runat="server"
+            Text="Usuarios"
+            CssClass="menu-button"
+            OnClick="btnUsuarios_Click" />
 
-    </aside>
-
-    <!-- CONTENIDO -->
-
-    <main class="content">
-
-        <div class="topbar">
-
-            <h1>Dashboard</h1>
+        <div class="menu-bottom">
 
             <asp:Button
-                ID="btnSalir"
+                ID="btnCerrarSesion"
                 runat="server"
+                Text="Cerrar sesión"
                 CssClass="btn-danger"
-                Text="Cerrar Sesión"
-                OnClick="btnSalir_Click"/>
+                OnClick="btnCerrarSesion_Click" />
 
         </div>
 
-        <h2 class="bienvenida">
+    </asp:Panel>
 
-            Bienvenido,
-            <asp:Label
-                ID="lblUsuario"
-                runat="server"/>
 
-        </h2>
+    <!-- CONTENIDO -->
+
+    <div class="content">
+
+        <div class="topbar">
+
+            <h1>
+                Dashboard
+            </h1>
+
+            <p class="bienvenida">
+
+                Bienvenido,
+                
+                <strong>
+                    <asp:Label
+                        ID="lblUsuario"
+                        runat="server">
+                    </asp:Label>
+                </strong>
+
+            </p>
+
+        </div>
+
+
+        <!-- TARJETAS -->
 
         <div class="cards">
 
-            <div class="card">
+            <asp:Panel
+                ID="pnlClientes"
+                runat="server"
+                CssClass="card">
 
-                <h3>Clientes</h3>
+                <h3>
+                    Clientes
+                </h3>
 
                 <asp:Label
                     ID="lblClientes"
                     runat="server"
                     Text="0"
-                    CssClass="numero"/>
+                    CssClass="numero">
+                </asp:Label>
 
-            </div>
+            </asp:Panel>
 
-            <div class="card">
 
-                <h3>Membresías</h3>
+            <asp:Panel
+                ID="pnlMembresias"
+                runat="server"
+                CssClass="card">
+
+                <h3>
+                    Membresías
+                </h3>
 
                 <asp:Label
                     ID="lblMembresias"
                     runat="server"
                     Text="0"
-                    CssClass="numero"/>
+                    CssClass="numero">
+                </asp:Label>
 
-            </div>
+            </asp:Panel>
 
-            <div class="card">
 
-                <h3>Inscripciones</h3>
+            <asp:Panel
+                ID="pnlInscripciones"
+                runat="server"
+                CssClass="card">
+
+                <h3>
+                    Inscripciones
+                </h3>
 
                 <asp:Label
                     ID="lblInscripciones"
                     runat="server"
                     Text="0"
-                    CssClass="numero"/>
+                    CssClass="numero">
+                </asp:Label>
 
-            </div>
+            </asp:Panel>
 
-            <div class="card">
 
-                <h3>Usuarios</h3>
+            <asp:Panel
+                ID="pnlUsuarios"
+                runat="server"
+                CssClass="card">
+
+                <h3>
+                    Usuarios
+                </h3>
 
                 <asp:Label
                     ID="lblUsuarios"
                     runat="server"
                     Text="0"
-                    CssClass="numero"/>
+                    CssClass="numero">
+                </asp:Label>
 
-            </div>
+            </asp:Panel>
 
         </div>
 
-    </main>
+
+        <!-- RESUMEN -->
+
+        <div class="form-card">
+
+            <h2>
+                Resumen del sistema
+            </h2>
+
+            <p class="bienvenida">
+                Desde este panel puedes administrar los clientes,
+                membresías, inscripciones y usuarios de Gym Control Pro.
+            </p>
+
+        </div>
+
+    </div>
 
 </div>
-
-</form>
-
-</body>
-
-</html>
