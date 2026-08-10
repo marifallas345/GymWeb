@@ -1,234 +1,602 @@
-﻿/* ===========================
-   RESET
-=========================== */
-
-* {
-    margin: 0;
-    padding: 0;
+﻿* {
     box-sizing: border-box;
 }
 
-/* ===========================
-   BODY
-=========================== */
+/* =========================================================
+   PALETA DE COLORES
+========================================================= */
+
+:root {
+    --blanco: #FFFFFF;
+    --crema: #F5EEC3;
+    --beige: #C7B299;
+    --verde: #AFCCA8;
+    --borgona: #AE0C3E;
+    --cafe: #33211C;
+    --negro: #000000;
+    --fondo: #F8F7F4;
+    --texto: #33211C;
+    --texto-secundario: #6B5A52;
+    --borde: #C7B299;
+}
+
+/* =========================================================
+   GENERAL
+========================================================= */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: "Times New Roman", Times, serif;
+    background: var(--fondo);
+    color: var(--texto);
+}
 
 body {
-    font-family: 'Segoe UI';
-    background: #f5f5f5;
+    min-height: 100vh;
 }
 
-/* ===========================
-   LOGIN
-=========================== */
-
-.login-container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* ===========================
-   TARJETA
-=========================== */
-
-.login-card {
-    width: 420px;
-    background: white;
-    border-radius: 10px;
-    padding: 40px;
-    box-shadow: 0px 0px 15px rgba(0,0,0,.15);
-}
-
-    /* ===========================
-   TITULO
-=========================== */
-
-    .login-card h1 {
-        text-align: center;
-        color: #AE0C3E;
-        margin-bottom: 10px;
-    }
-
-.subtitulo {
-    text-align: center;
-    color: #555;
-    margin-bottom: 30px;
-}
-
-/* ===========================
-   FORMULARIO
-=========================== */
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-    }
-
-/* ===========================
-   TEXTBOX
-=========================== */
-
-.textbox {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-/* ===========================
-   BOTON
-=========================== */
-
-.btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    background: #AE0C3E;
-    color: white;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-    .btn:hover {
-        background: #8c0a31;
-    }
-
-/* ===========================
-   MENSAJES
-=========================== */
-
-.mensaje {
-    color: red;
-    display: block;
-    margin-bottom: 15px;
-}
-
-/*=========================================
-=            DASHBOARD LAYOUT             =
-=========================================*/
+/* =========================================================
+   LAYOUT PRINCIPAL
+========================================================= */
 
 .layout {
     display: flex;
     min-height: 100vh;
+    width: 100%;
 }
 
-/*=========================================
-=              SIDEBAR                    =
-=========================================*/
+/* =========================================================
+   SIDEBAR
+========================================================= */
 
 .sidebar {
-    width: 240px;
-    background: #AE0C3E;
-    color: #fff;
-    padding: 25px 0;
+    width: 250px;
+    min-height: 100vh;
+    background: var(--cafe);
+    padding: 25px 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 15px rgba(51, 33, 28, 0.15);
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+}
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.logo {
+    color: var(--blanco);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 21px;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 0 35px 0;
+    letter-spacing: 1px;
+}
+
+/* =========================================================
+   BOTONES DEL MENÚ
+========================================================= */
+
+.menu-button {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--blanco);
+    padding: 13px 16px;
+    margin-bottom: 7px;
+    border-radius: 8px;
+    text-align: left;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .menu-button:hover {
+        background: var(--beige);
+        color: var(--cafe);
+        transform: translateX(3px);
+    }
+
+/* =========================================================
+   MENU INFERIOR
+========================================================= */
+
+.menu-bottom {
+    margin-top: auto;
+}
+
+/* =========================================================
+   CERRAR SESIÓN
+========================================================= */
+
+.btn-danger {
+    width: 100%;
+    border: none;
+    background: var(--borgona);
+    color: var(--blanco);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+    .btn-danger:hover {
+        background: var(--crema);
+        color: var(--cafe);
+    }
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    padding: 30px 35px;
+}
+
+/* =========================================================
+   TOPBAR
+========================================================= */
+
+.topbar {
+    background: var(--crema);
+    padding: 24px 28px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 12px rgba(51, 33, 28, 0.08);
+    border-left: 5px solid var(--borgona);
+}
+
+    .topbar h1 {
+        margin: 0;
+        color: var(--cafe);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+.bienvenida {
+    margin: 7px 0 0 0;
+    color: var(--texto-secundario);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+}
+
+/* =========================================================
+   TARJETAS DASHBOARD
+========================================================= */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: var(--blanco);
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 145px;
+    box-shadow: 0 3px 15px rgba(51, 33, 28, 0.08);
+    border-left: 5px solid var(--beige);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 20px rgba(51, 33, 28, 0.13);
+    }
+
+    .card h3 {
+        margin: 0 0 15px 0;
+        color: var(--texto-secundario);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 14px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+.numero {
+    display: block;
+    color: var(--cafe);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 38px;
+    font-weight: bold;
+}
+
+/* =========================================================
+   COLORES DE LAS TARJETAS
+========================================================= */
+
+.card-clientes {
+    border-left-color: var(--verde);
+}
+
+.card-membresias {
+    border-left-color: var(--beige);
+}
+
+.card-inscripciones {
+    border-left-color: var(--crema);
+}
+
+.card-usuarios {
+    border-left-color: var(--borgona);
+}
+
+/* =========================================================
+   FORMULARIOS
+========================================================= */
+
+.form-card {
+    background: var(--blanco);
+    padding: 28px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(51, 33, 28, 0.07);
+    border-top: 4px solid var(--beige);
+}
+
+    .form-card h2 {
+        margin: 0 0 25px 0;
+        color: var(--cafe);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 21px;
+        font-weight: bold;
+    }
+
+/* =========================================================
+   GRID FORMULARIOS
+========================================================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
     display: flex;
     flex-direction: column;
 }
 
-    .sidebar h2 {
-        text-align: center;
-        margin-bottom: 30px;
-        font-size: 28px;
-        letter-spacing: 2px;
+    .form-group label {
+        margin-bottom: 7px;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 14px;
+        font-weight: bold;
+        color: var(--cafe);
     }
 
-.menu-item {
-    color: #fff;
-    text-decoration: none;
-    padding: 15px 25px;
-    transition: .3s;
-    font-size: 16px;
+/* =========================================================
+   INPUTS
+========================================================= */
+
+.textbox,
+.form-control {
+    width: 100%;
+    height: 42px;
+    border: 1px solid var(--beige);
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    background: var(--blanco);
+    color: var(--cafe);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-    .menu-item:hover {
-        background: #8B0A33;
+    .textbox:focus,
+    .form-control:focus {
+        border-color: var(--borgona);
+        box-shadow: 0 0 0 3px rgba(174, 12, 62, 0.10);
     }
 
-/*=========================================
-=              CONTENT                    =
-=========================================*/
+/* =========================================================
+   BOTONES
+========================================================= */
 
-.content {
-    flex: 1;
-    background: #f5f5f5;
-    padding: 30px;
-}
-
-/*=========================================
-=              TOPBAR                     =
-=========================================*/
-
-.topbar {
+.form-buttons {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
+    gap: 10px;
+    margin-top: 20px;
 }
 
-    .topbar h1 {
-        color: #333;
-    }
-
-/*=========================================
-=             BIENVENIDA                  =
-=========================================*/
-
-.bienvenida {
-    margin-bottom: 30px;
-    color: #555;
-}
-
-/*=========================================
-=                CARDS                    =
-=========================================*/
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 20px;
-}
-
-.card {
-    background: #fff;
-    border-radius: 10px;
-    padding: 25px;
-    box-shadow: 0 3px 10px rgba(0,0,0,.12);
-    text-align: center;
-}
-
-    .card h3 {
-        color: #666;
-        margin-bottom: 15px;
-    }
-
-.numero {
-    font-size: 40px;
-    font-weight: bold;
-    color: #AE0C3E;
-}
-
-/*=========================================
-=               BOTONES                   =
-=========================================*/
-
-.btn-danger {
-    background: #AE0C3E;
-    color: #fff;
+.btn {
+    background: var(--borgona);
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    color: var(--blanco);
+    padding: 11px 22px;
+    border-radius: 7px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 15px;
+    transition: 0.2s ease;
 }
 
-    .btn-danger:hover {
-        background: #8B0A33;
+    .btn:hover {
+        background: var(--cafe);
     }
+
+.btn-secondary {
+    background: var(--beige);
+    border: none;
+    color: var(--cafe);
+    padding: 11px 22px;
+    border-radius: 7px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+    .btn-secondary:hover {
+        background: var(--crema);
+    }
+
+/* =========================================================
+   MENSAJES
+========================================================= */
+
+.mensaje {
+    display: block;
+    margin-top: 15px;
+    padding: 10px 14px;
+    border-radius: 7px;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    background: var(--crema);
+    color: var(--cafe);
+    border-left: 4px solid var(--borgona);
+}
+
+/* =========================================================
+   TABLAS
+========================================================= */
+
+.grid {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: var(--blanco);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+    box-shadow: 0 3px 15px rgba(51, 33, 28, 0.07);
+}
+
+    .grid th {
+        background: var(--cafe);
+        color: var(--blanco);
+        padding: 13px 12px;
+        text-align: left;
+        font-family: "Times New Roman", Times, serif;
+        font-weight: bold;
+        border: none;
+    }
+
+    .grid td {
+        padding: 12px;
+        border-bottom: 1px solid #eee6df;
+        color: var(--cafe);
+    }
+
+    .grid tr:hover td {
+        background: var(--crema);
+    }
+
+    /* =========================================================
+   BOTONES DE TABLA
+========================================================= */
+
+    .grid input[type="submit"],
+    .grid input[type="button"],
+    .grid button {
+        border: none;
+        border-radius: 5px;
+        padding: 7px 12px;
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12px;
+        cursor: pointer;
+        background: var(--borgona);
+        color: var(--blanco);
+    }
+
+        .grid input[type="submit"]:hover,
+        .grid input[type="button"]:hover,
+        .grid button:hover {
+            background: var(--cafe);
+        }
+
+    .grid a {
+        color: var(--borgona);
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .grid a:hover {
+            color: var(--cafe);
+        }
+
+/* =========================================================
+   SELECT
+========================================================= */
+
+select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid var(--beige);
+    border-radius: 7px;
+    padding: 0 12px;
+    background: var(--blanco);
+    color: var(--cafe);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14px;
+}
+
+    select:focus {
+        border-color: var(--borgona);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(174, 12, 62, 0.10);
+    }
+
+/* =========================================================
+   CHECKBOX
+========================================================= */
+
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--borgona);
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--crema);
+}
+
+.login-card {
+    width: 400px;
+    background: var(--blanco);
+    padding: 35px;
+    border-radius: 14px;
+    border-top: 6px solid var(--borgona);
+    box-shadow: 0 10px 35px rgba(51, 33, 28, 0.15);
+}
+
+    .login-card h1 {
+        text-align: center;
+        margin: 0 0 8px 0;
+        color: var(--cafe);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 30px;
+        font-weight: bold;
+    }
+
+    .login-card p {
+        text-align: center;
+        color: var(--texto-secundario);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+
+    .login-card .btn {
+        width: 100%;
+    }
+
+/* =========================================================
+   ESTADOS
+========================================================= */
+
+.estado-activo {
+    display: inline-block;
+    background: var(--verde);
+    color: var(--cafe);
+    padding: 4px 9px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.estado-inactivo {
+    display: inline-block;
+    background: var(--crema);
+    color: var(--borgona);
+    padding: 4px 9px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* =========================================================
+   ALERTAS
+========================================================= */
+
+.alerta {
+    background: var(--crema);
+    border-left: 4px solid var(--beige);
+    color: var(--cafe);
+    padding: 12px;
+    border-radius: 7px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+    .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .content {
+        margin-left: 210px;
+        width: calc(100% - 210px);
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .layout {
+        flex-direction: column;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .menu-bottom {
+        margin-top: 15px;
+    }
+
+    .login-card {
+        width: calc(100% - 30px);
+        padding: 25px;
+    }
+}

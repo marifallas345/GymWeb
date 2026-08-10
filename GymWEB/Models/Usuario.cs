@@ -8,9 +8,13 @@ namespace GymWEB.Models
 
         public string Nombre { get; set; }
 
-        [JsonProperty("usuario")]
+        [JsonProperty("Usuario")]
         public string UsuarioLogin { get; set; }
 
+        public string Contrasena { get; set; }
+
         public string Rol { get; set; }
+
+        public bool Estado { get; set; }
     }
 }

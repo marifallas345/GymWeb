@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace GymWEB.Services
 {
-    public class MembresiaService
+    public class InscripcionService
     {
         private readonly ApiClient _apiClient =
             new ApiClient();
@@ -13,20 +13,24 @@ namespace GymWEB.Services
         // OBTENER TODAS
         // =========================================================
 
-        public async Task<List<Membresia>> ObtenerTodosAsync()
+        public async Task<List<Inscripcion>>
+            ObtenerTodosAsync()
         {
-            return await _apiClient.GetAsync<List<Membresia>>(
-                "Membresia");
+            return await _apiClient
+                .GetAsync<List<Inscripcion>>(
+                    "Inscripcion");
         }
 
         // =========================================================
         // OBTENER POR ID
         // =========================================================
 
-        public async Task<Membresia> ObtenerPorIdAsync(int id)
+        public async Task<Inscripcion>
+            ObtenerPorIdAsync(int id)
         {
-            return await _apiClient.GetAsync<Membresia>(
-                $"Membresia/{id}");
+            return await _apiClient
+                .GetAsync<Inscripcion>(
+                    $"Inscripcion/{id}");
         }
 
         // =========================================================
@@ -34,11 +38,12 @@ namespace GymWEB.Services
         // =========================================================
 
         public async Task<bool> AgregarAsync(
-            Membresia membresia)
+            Inscripcion inscripcion)
         {
-            return await _apiClient.PostSimpleAsync(
-                "Membresia",
-                membresia);
+            return await _apiClient
+                .PostSimpleAsync(
+                    "Inscripcion",
+                    inscripcion);
         }
 
         // =========================================================
@@ -46,21 +51,24 @@ namespace GymWEB.Services
         // =========================================================
 
         public async Task<bool> ActualizarAsync(
-            Membresia membresia)
+            Inscripcion inscripcion)
         {
-            return await _apiClient.PutAsync(
-                "Membresia",
-                membresia);
+            return await _apiClient
+                .PutAsync(
+                    "Inscripcion",
+                    inscripcion);
         }
 
         // =========================================================
         // ELIMINAR
         // =========================================================
 
-        public async Task<bool> EliminarAsync(int id)
+        public async Task<bool> EliminarAsync(
+            int id)
         {
-            return await _apiClient.DeleteAsync(
-                $"Membresia/{id}");
+            return await _apiClient
+                .DeleteAsync(
+                    $"Inscripcion/{id}");
         }
     }
 }

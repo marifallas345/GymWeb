@@ -1,5 +1,4 @@
-﻿
-using GymWEB.Exceptions;
+﻿using GymWEB.Exceptions;
 using GymWEB.Models;
 using GymWEB.Services;
 using System;
@@ -19,8 +18,6 @@ namespace GymWEB.Views
 
                 if (!string.IsNullOrWhiteSpace(msg))
                 {
-                    // El valor llega URL-decodificado desde Request.QueryString;
-                    // Se codifica como HTML al asignarlo para evitar XSS reflejado.
                     lblMensaje.Text = Server.HtmlEncode(msg);
                 }
             }
@@ -31,7 +28,8 @@ namespace GymWEB.Views
             string usuario = txtUsuario.Text.Trim();
             string password = txtPassword.Text.Trim();
 
-            if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(usuario) ||
+                string.IsNullOrWhiteSpace(password))
             {
                 lblMensaje.Text = "Ingresa usuario y contraseña.";
                 return;
@@ -46,30 +44,67 @@ namespace GymWEB.Views
                 };
 
                 UsuarioService servicio = new UsuarioService();
-                LoginResponse respuesta = servicio.Login(login);
+
+                LoginResponse respuesta =
+                    servicio.Login(login);
+
+                if (respuesta == null)
+                {
+                    lblMensaje.Text =
+                        "La API no devolvió una respuesta.";
+                    return;
+                }
 
                 Session.Clear();
-                Session["Token"] = respuesta.Token;
-                Session["Usuario"] = respuesta.Usuario.Nombre;
-                Session["Rol"] = respuesta.Usuario.Rol;
 
-                Response.Redirect("~/Views/Dashboard.aspx");
-            }
-            catch (ApiException apiEx) when (apiEx.EsNoAutorizado)
-            {
-                // Credenciales inválidas: Mensaje genérico, sin indicar si el
-                // usuario existe o no.
-                lblMensaje.Text = "Usuario o contraseña incorrectos.";
+                Session["Token"] =
+                    respuesta.Token;
+
+                Session["Usuario"] =
+                    respuesta.Usuario.Nombre;
+
+                Session["Rol"] =
+                    respuesta.Usuario.Rol;
+
+                Response.Redirect(
+                    "~/Views/Dashboard.aspx",
+                    false);
+
+                Context.ApplicationInstance
+                    .CompleteRequest();
             }
             catch (ApiException apiEx)
             {
-               
-                lblMensaje.Text = apiEx.Message;
+                if (apiEx.EsNoAutorizado)
+                {
+                    lblMensaje.Text =
+                        "Usuario o contraseña incorrectos.";
+                }
+                else if (apiEx.EsProhibido)
+                {
+                    lblMensaje.Text =
+                        "No tienes permisos para realizar esta acción.";
+                }
+                else
+                {
+                    lblMensaje.Text =
+                        "Error de la API: " +
+                        apiEx.Message;
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-           
-                lblMensaje.Text = "Ocurrió un error inesperado. Intenta nuevamente.";
+                // TEMPORAL: mostrar el error real
+                lblMensaje.Text =
+                    "ERROR: " +
+                    ex.Message;
+
+                if (ex.InnerException != null)
+                {
+                    lblMensaje.Text +=
+                        " | DETALLE: " +
+                        ex.InnerException.Message;
+                }
             }
         }
     }

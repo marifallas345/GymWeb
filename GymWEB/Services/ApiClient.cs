@@ -1,7 +1,5 @@
-﻿
-using GymWEB.Exceptions;
+﻿using GymWEB.Exceptions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Configuration;
 using System.Net;
@@ -13,218 +11,482 @@ using System.Web;
 
 namespace GymWEB.Services
 {
-
     public class ApiClient
     {
-        private static readonly HttpClient _httpClient = CrearHttpClient();
+        // =========================================================
+        // HTTP CLIENT
+        // =========================================================
 
-        private static HttpClient CrearHttpClient()
+        private static readonly HttpClient _httpClient;
+
+        // =========================================================
+        // CONFIGURACIÓN INICIAL
+        // =========================================================
+
+        static ApiClient()
         {
-            
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol =
+                SecurityProtocolType.Tls12;
 
-            var client = new HttpClient
+            _httpClient = new HttpClient();
+
+            string apiBaseUrl =
+                ConfigurationManager
+                    .AppSettings["ApiBaseUrl"];
+
+            if (string.IsNullOrWhiteSpace(apiBaseUrl))
             {
-                BaseAddress = new Uri(ConfigurationManager.AppSettings["ApiBaseUrl"]),
-                Timeout = TimeSpan.FromSeconds(
-                    ObtenerTimeoutSegundos())
-            };
+                throw new Exception(
+                    "No se encontró ApiBaseUrl en Web.config.");
+            }
 
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
+            if (!apiBaseUrl.EndsWith("/"))
+            {
+                apiBaseUrl += "/";
+            }
 
-            return client;
+            _httpClient.BaseAddress =
+                new Uri(apiBaseUrl);
+
+            string timeoutConfig =
+                ConfigurationManager
+                    .AppSettings["ApiTimeoutSeconds"];
+
+            if (int.TryParse(
+                timeoutConfig,
+                out int timeoutSeconds))
+            {
+                _httpClient.Timeout =
+                    TimeSpan.FromSeconds(
+                        timeoutSeconds);
+            }
+            else
+            {
+                _httpClient.Timeout =
+                    TimeSpan.FromSeconds(30);
+            }
         }
 
-        private static int ObtenerTimeoutSegundos()
+        // =========================================================
+        // CONSTRUCTOR
+        // =========================================================
+
+        public ApiClient()
         {
-            var valor = ConfigurationManager.AppSettings["ApiTimeoutSeconds"];
-
-            if (int.TryParse(valor, out int segundos) && segundos > 0)
-                return segundos;
-
-            return 15;
+            // El HttpClient ya fue configurado
+            // en el constructor estático.
         }
 
-        private string ObtenerToken()
-        {
-            return HttpContext.Current?.Session?["Token"] as string;
-        }
+        // =========================================================
+        // TOKEN
+        // =========================================================
 
-        private HttpRequestMessage CrearRequest(HttpMethod metodo, string endpoint)
+        private void AgregarToken()
         {
-            var request = new HttpRequestMessage(metodo, endpoint);
+            string token =
+                HttpContext.Current?
+                    .Session["Token"] as string;
 
-            var token = ObtenerToken();
+            _httpClient.DefaultRequestHeaders
+                .Authorization = null;
 
             if (!string.IsNullOrWhiteSpace(token))
             {
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders
+                    .Authorization =
+                    new AuthenticationHeaderValue(
+                        "Bearer",
+                        token);
             }
-
-            return request;
         }
 
-        private static StringContent CrearContenidoJson<T>(T data)
-        {
-            string json = JsonConvert.SerializeObject(data);
-            return new StringContent(json, Encoding.UTF8, "application/json");
-        }
+        // =========================================================
+        // GET
+        // =========================================================
 
-    
-        private async Task<HttpResponseMessage> EnviarAsync(HttpRequestMessage request)
+        public async Task<T> GetAsync<T>(
+            string endpoint)
         {
+            AgregarToken();
+
             HttpResponseMessage response;
 
             try
             {
-                response = await _httpClient
-                    .SendAsync(request)
-                    .ConfigureAwait(false);
+                response =
+                    await _httpClient
+                        .GetAsync(endpoint)
+                        .ConfigureAwait(false);
             }
             catch (TaskCanceledException)
             {
-                // Timeout del HttpClient 
                 throw new ApiException(
                     HttpStatusCode.RequestTimeout,
-                    "GymAPI no respondió a tiempo. Intenta nuevamente en unos segundos.");
+                    "La solicitud tardó demasiado tiempo.");
             }
             catch (HttpRequestException)
             {
-                
                 throw new ApiException(
                     HttpStatusCode.ServiceUnavailable,
-                    "No fue posible conectarse con GymAPI. Verifica que el servicio esté disponible.");
+                    "No se pudo conectar con la API.");
             }
 
-            if (!response.IsSuccessStatusCode)
-            {
-                string mensaje = await ExtraerMensajeErrorAsync(response)
-                    .ConfigureAwait(false);
+            await ValidarRespuestaAsync(response);
 
-                throw new ApiException(response.StatusCode, mensaje);
-            }
-
-            return response;
-        }
-
-        
-        private static async Task<string> ExtraerMensajeErrorAsync(HttpResponseMessage response)
-        {
-            try
-            {
-                string contenido = await response.Content
+            string contenido =
+                await response.Content
                     .ReadAsStringAsync()
                     .ConfigureAwait(false);
 
-                if (!string.IsNullOrWhiteSpace(contenido))
-                {
-                    var json = JObject.Parse(contenido);
-                    var mensaje = json["mensaje"]?.ToString();
+            return JsonConvert
+                .DeserializeObject<T>(contenido);
+        }
 
-                    if (!string.IsNullOrWhiteSpace(mensaje))
-                        return mensaje;
+        // =========================================================
+        // POST
+        // =========================================================
+
+        public async Task<TResponse> PostAsync<TRequest, TResponse>(
+            string endpoint,
+            TRequest objeto)
+        {
+            AgregarToken();
+
+            string json =
+                JsonConvert.SerializeObject(objeto);
+
+            using (var content =
+                new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json"))
+            {
+                HttpResponseMessage response;
+
+                try
+                {
+                    response =
+                        await _httpClient
+                            .PostAsync(
+                                endpoint,
+                                content)
+                            .ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.RequestTimeout,
+                        "La solicitud tardó demasiado tiempo.");
+                }
+                catch (HttpRequestException)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.ServiceUnavailable,
+                        "No se pudo conectar con la API.");
+                }
+
+                await ValidarRespuestaAsync(response);
+
+                string contenido =
+                    await response.Content
+                        .ReadAsStringAsync()
+                        .ConfigureAwait(false);
+
+                return JsonConvert
+                    .DeserializeObject<TResponse>(
+                        contenido);
+            }
+        }
+
+        // =========================================================
+        // POST SIMPLE
+        // =========================================================
+
+        public async Task<bool> PostSimpleAsync<T>(
+            string endpoint,
+            T objeto)
+        {
+            AgregarToken();
+
+            string json =
+                JsonConvert.SerializeObject(objeto);
+
+            using (var content =
+                new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json"))
+            {
+                HttpResponseMessage response;
+
+                try
+                {
+                    response =
+                        await _httpClient
+                            .PostAsync(
+                                endpoint,
+                                content)
+                            .ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.RequestTimeout,
+                        "La solicitud tardó demasiado tiempo.");
+                }
+                catch (HttpRequestException)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.ServiceUnavailable,
+                        "No se pudo conectar con la API.");
+                }
+
+                await ValidarRespuestaAsync(response);
+
+                return true;
+            }
+        }
+
+        // =========================================================
+        // PUT
+        // =========================================================
+
+        public async Task<bool> PutAsync<T>(
+            string endpoint,
+            T objeto)
+        {
+            AgregarToken();
+
+            string json =
+                JsonConvert.SerializeObject(objeto);
+
+            using (var content =
+                new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json"))
+            {
+                HttpResponseMessage response;
+
+                try
+                {
+                    response =
+                        await _httpClient
+                            .PutAsync(
+                                endpoint,
+                                content)
+                            .ConfigureAwait(false);
+                }
+                catch (TaskCanceledException)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.RequestTimeout,
+                        "La solicitud tardó demasiado tiempo.");
+                }
+                catch (HttpRequestException)
+                {
+                    throw new ApiException(
+                        HttpStatusCode.ServiceUnavailable,
+                        "No se pudo conectar con la API.");
+                }
+
+                await ValidarRespuestaAsync(response);
+
+                return true;
+            }
+        }
+
+        // =========================================================
+        // DELETE
+        // =========================================================
+
+        public async Task<bool> DeleteAsync(
+            string endpoint)
+        {
+            AgregarToken();
+
+            HttpResponseMessage response;
+
+            try
+            {
+                response =
+                    await _httpClient
+                        .DeleteAsync(endpoint)
+                        .ConfigureAwait(false);
+            }
+            catch (TaskCanceledException)
+            {
+                throw new ApiException(
+                    HttpStatusCode.RequestTimeout,
+                    "La solicitud tardó demasiado tiempo.");
+            }
+            catch (HttpRequestException)
+            {
+                throw new ApiException(
+                    HttpStatusCode.ServiceUnavailable,
+                    "No se pudo conectar con la API.");
+            }
+
+            await ValidarRespuestaAsync(response);
+
+            return true;
+        }
+
+        // =========================================================
+        // VALIDAR RESPUESTA
+        // =========================================================
+
+        private async Task ValidarRespuestaAsync(
+            HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+
+            string mensaje =
+                await ExtraerMensajeErrorAsync(response)
+                    .ConfigureAwait(false);
+
+            // =====================================================
+            // 401 - NO AUTORIZADO
+            // =====================================================
+
+            if (response.StatusCode ==
+                HttpStatusCode.Unauthorized)
+            {
+                var session =
+                    HttpContext.Current?.Session;
+
+                if (session != null)
+                {
+                    session.Clear();
                 }
             }
-            catch (JsonException)
+
+            // =====================================================
+            // 403 - PROHIBIDO
+            // =====================================================
+
+            if (response.StatusCode ==
+                HttpStatusCode.Forbidden)
             {
-                
+                if (string.IsNullOrWhiteSpace(mensaje))
+                {
+                    mensaje =
+                        "No tienes permisos para realizar esta acción.";
+                }
             }
+
+            // =====================================================
+            // LANZAR EXCEPCIÓN
+            // =====================================================
+
+            throw new ApiException(
+                response.StatusCode,
+                mensaje);
+        }
+
+        // =========================================================
+        // EXTRAER MENSAJE DE ERROR
+        // =========================================================
+
+        private async Task<string>
+            ExtraerMensajeErrorAsync(
+                HttpResponseMessage response)
+        {
+            try
+            {
+                string contenido =
+                    await response.Content
+                        .ReadAsStringAsync()
+                        .ConfigureAwait(false);
+
+                if (!string.IsNullOrWhiteSpace(contenido))
+                {
+                    try
+                    {
+                        dynamic error =
+                            JsonConvert
+                                .DeserializeObject(
+                                    contenido);
+
+                        if (error?.mensaje != null)
+                        {
+                            return error.mensaje
+                                .ToString();
+                        }
+
+                        if (error?.message != null)
+                        {
+                            return error.message
+                                .ToString();
+                        }
+
+                        if (error?.title != null)
+                        {
+                            return error.title
+                                .ToString();
+                        }
+                    }
+                    catch
+                    {
+                        // Si no es JSON,
+                        // utilizamos el contenido directamente.
+                    }
+                }
+            }
+            catch
+            {
+                // Ignorar errores al intentar
+                // leer el mensaje.
+            }
+
+            // =====================================================
+            // MENSAJES SEGÚN CÓDIGO HTTP
+            // =====================================================
 
             switch (response.StatusCode)
             {
                 case HttpStatusCode.Unauthorized:
-                    return "Tu sesión expiró o no tienes autorización. Inicia sesión nuevamente.";
+
+                    return
+                        "Tu sesión expiró o no tienes autorización. Inicia sesión nuevamente.";
+
                 case HttpStatusCode.Forbidden:
-                    return "No tienes permisos para realizar esta acción.";
+
+                    return
+                        "No tienes permisos para realizar esta acción.";
+
                 case HttpStatusCode.NotFound:
-                    return "El recurso solicitado no existe.";
+
+                    return
+                        "El recurso solicitado no existe.";
+
+                case HttpStatusCode.BadRequest:
+
+                    return
+                        "Los datos enviados no son válidos.";
+
+                case HttpStatusCode.InternalServerError:
+
+                    return
+                        "Ocurrió un error interno en el servidor.";
+
+                case HttpStatusCode.ServiceUnavailable:
+
+                    return
+                        "El servicio no está disponible.";
+
+                case HttpStatusCode.RequestTimeout:
+
+                    return
+                        "La solicitud tardó demasiado tiempo.";
+
                 default:
-                    return "Ocurrió un error al comunicarse con GymAPI.";
-            }
-        }
 
-        //==========================
-        // GET
-        //==========================
-        public async Task<T> GetAsync<T>(string endpoint)
-        {
-            using (var request = CrearRequest(HttpMethod.Get, endpoint))
-            using (var response = await EnviarAsync(request).ConfigureAwait(false))
-            {
-                string json = await response.Content
-                    .ReadAsStringAsync()
-                    .ConfigureAwait(false);
-
-                return JsonConvert.DeserializeObject<T>(json);
-            }
-        }
-
-        //==========================
-        // POST 
-        //==========================
-        public async Task<TResponse> PostAsync<TRequest, TResponse>(
-            string endpoint,
-            TRequest data)
-        {
-            using (var request = CrearRequest(HttpMethod.Post, endpoint))
-            {
-                request.Content = CrearContenidoJson(data);
-
-                using (var response = await EnviarAsync(request).ConfigureAwait(false))
-                {
-                    string json = await response.Content
-                        .ReadAsStringAsync()
-                        .ConfigureAwait(false);
-
-                    return JsonConvert.DeserializeObject<TResponse>(json);
-                }
-            }
-        }
-
-        //==========================
-        // POST SIMPLE 
-        //==========================
-        public async Task<bool> PostSimpleAsync<T>(string endpoint, T data)
-        {
-            using (var request = CrearRequest(HttpMethod.Post, endpoint))
-            {
-                request.Content = CrearContenidoJson(data);
-
-                using (await EnviarAsync(request).ConfigureAwait(false))
-                {
-                    return true;
-                }
-            }
-        }
-
-        //==========================
-        // PUT
-        //==========================
-        public async Task<bool> PutAsync<T>(string endpoint, T data)
-        {
-            using (var request = CrearRequest(HttpMethod.Put, endpoint))
-            {
-                request.Content = CrearContenidoJson(data);
-
-                using (await EnviarAsync(request).ConfigureAwait(false))
-                {
-                    return true;
-                }
-            }
-        }
-
-        //==========================
-        // DELETE
-        //==========================
-        public async Task<bool> DeleteAsync(string endpoint)
-        {
-            using (var request = CrearRequest(HttpMethod.Delete, endpoint))
-            using (await EnviarAsync(request).ConfigureAwait(false))
-            {
-                return true;
+                    return
+                        $"La API respondió con el código {(int)response.StatusCode}.";
             }
         }
     }
